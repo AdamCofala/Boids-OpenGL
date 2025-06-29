@@ -15,7 +15,7 @@ public:
 	void setupSimulation(unsigned int N) {
 		
 		std::random_device rd;
-		std::uniform_real_distribution<float> pos(-2.0f, 2.0f);
+		std::uniform_real_distribution<float> pos(-1.0f, 1.0f);
 		std::uniform_real_distribution<float> dir(-0.0001f, 0.0001f);
 		std::mt19937 gen(rd());
 

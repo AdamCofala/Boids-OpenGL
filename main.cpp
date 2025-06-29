@@ -12,7 +12,9 @@
 // Global variables
 GLuint SCR_WIDTH = 1200;
 GLuint SCR_HEIGHT = 720;
-const int N = 100000; // Number of boids
+const int N = 5000; // Number of boids
+const int maxBufferSize = 10000; // max buffer size
+int scale = 2.0f;
 
 int   frame = 0;
 int   FPS = 0;
@@ -189,7 +191,7 @@ void setupBuffers() {
 
     // Set up instance buffer
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, N * sizeof(BoidInstance), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, maxBufferSize * sizeof(BoidInstance), nullptr, GL_STREAM_DRAW);
 
     // Instance attribute 1: Position (2D)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(BoidInstance), (void*)offsetof(BoidInstance, position));
@@ -226,7 +228,7 @@ void updateInstanceBuffer() {
     for (int i = 0; i < sim.Boids.size(); i++) {
          boids[i].position = sim.Boids[i].pos;
 
-         boids[i].scale=3.0f;
+         boids[i].scale = scale;
          boids[i].rotation = sim.Boids[i].getRotation();
          boids[i].color = { 0,1,0 };
 
