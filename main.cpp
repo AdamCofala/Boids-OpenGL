@@ -12,7 +12,7 @@
 // Global variables
 GLuint SCR_WIDTH = 1200;
 GLuint SCR_HEIGHT = 720;
-const int N = 150; // Number of boids
+const int N = 500; // Number of boids
 const int maxBufferSize = 10000; // max buffer size
 int scale = 2.0f;
 

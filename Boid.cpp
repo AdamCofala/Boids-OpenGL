@@ -1,6 +1,7 @@
 #pragma once
 #include "Boid.h"
 #include <cmath>
+# define M_PI           3.14159265358979323846  /* pi */
 
 
 void Boid::update(float aspect) {
@@ -24,10 +25,6 @@ float Boid::getRotation()
 	return atan2f(-normalD.y,normalD.x);
 }
 
-glm::vec2 Boid::getFriends()
-{
-	return glm::vec2();
-}
 
 glm::vec2 Boid::getSeparation()
 {
@@ -42,4 +39,15 @@ glm::vec2 Boid::getAlignment()
 glm::vec2 Boid::getCohesion()
 {
 	return glm::vec2();
+}
+
+bool Boid::getFriend(Boid* potentialFriend, float fov, float fovRadius)
+{
+
+	glm::vec2 toFriend = potentialFriend->pos - this->pos ;
+	float cos = glm::dot(glm::normalize(dir), glm::normalize(-toFriend));
+
+	if (glm::distance(pos, potentialFriend->pos) < fovRadius &&  cos <= fov/2) return true;
+
+	return false;
 }

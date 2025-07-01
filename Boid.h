@@ -9,17 +9,18 @@ public:
 	glm::vec2 dir;
 	glm::vec3 color;
 
-	std::vector<Boid> friends;
+	std::vector<Boid*> friends;
 
 	void update(float aspect);
 
 	void handleBoundaries(float aspect);
 	
 	float getRotation();
-	glm::vec2 getFriends();
 	glm::vec2 getSeparation();
 	glm::vec2 getAlignment();
 	glm::vec2 getCohesion();
+
+	bool getFriend(Boid* potentialFriend, float fov, float fovRadius);
 
 
 };
