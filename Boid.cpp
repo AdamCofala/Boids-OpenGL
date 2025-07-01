@@ -3,10 +3,16 @@
 #include <cmath>
 
 
-void Boid::update() {
+void Boid::update(float aspect) {
+
 
 
 	this->pos += dir;
+	if(this->pos.x > aspect) this->pos.x = -aspect;
+	else if (this->pos.x < -aspect) this->pos.x = aspect;
+
+	if (this->pos.y > 1.0f) this->pos.y = -1.0f;
+	else if (this->pos.y < -1.0f) this->pos.y = 1.0f;
 }
 
 float Boid::getRotation()

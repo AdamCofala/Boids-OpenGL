@@ -12,16 +12,17 @@
 // Global variables
 GLuint SCR_WIDTH = 1200;
 GLuint SCR_HEIGHT = 720;
-const int N = 5000; // Number of boids
+const int N = 150; // Number of boids
 const int maxBufferSize = 10000; // max buffer size
 int scale = 2.0f;
 
+float aspect = (float)SCR_WIDTH / (float)SCR_HEIGHT;
 int   frame = 0;
 int   FPS = 0;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-Simulation sim(N);
+Simulation sim(N, aspect);
 
 // OpenGL objects
 GLFWwindow* window = nullptr;
@@ -293,8 +294,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 
     // Update projection matrix
-    float aspect = (float)SCR_WIDTH / (float)SCR_HEIGHT;
+    aspect = float(width) / float(height);
     glm::mat4 projection = glm::ortho(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
+    sim.updateAspect(aspect);
 
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
