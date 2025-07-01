@@ -5,14 +5,17 @@
 
 void Boid::update(float aspect) {
 
-
-
 	this->pos += dir;
-	if(this->pos.x > aspect) this->pos.x = -aspect;
-	else if (this->pos.x < -aspect) this->pos.x = aspect;
 
-	if (this->pos.y > 1.0f) this->pos.y = -1.0f;
-	else if (this->pos.y < -1.0f) this->pos.y = 1.0f;
+	handleBoundaries(aspect);
+}
+
+void Boid::handleBoundaries(float aspect) {
+	if (this->pos.x > aspect + 0.1f) this->pos.x = -aspect - 0.1f;
+	else if (this->pos.x < -aspect - 0.1f) this->pos.x = aspect + 0.1f;
+
+	if (this->pos.y > 1.1f) this->pos.y = -1.1f;
+	else if (this->pos.y < -1.1f) this->pos.y = 1.1f;
 }
 
 float Boid::getRotation()

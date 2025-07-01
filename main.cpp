@@ -231,9 +231,7 @@ void updateInstanceBuffer() {
 
          boids[i].scale = scale;
          boids[i].rotation = sim.Boids[i].getRotation();
-         boids[i].color = { 0,1,0 };
-
-      //  boids[i].rotation = sim.Boids[i].pos;
+         boids[i].color = sim.Boids[i].color;
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);

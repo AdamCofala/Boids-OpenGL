@@ -12,6 +12,8 @@ public:
 	std::vector<Boid> friends;
 
 	void update(float aspect);
+
+	void handleBoundaries(float aspect);
 	
 	float getRotation();
 	glm::vec2 getFriends();
