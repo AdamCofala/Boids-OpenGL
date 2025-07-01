@@ -23,7 +23,7 @@ public:
 		std::random_device rd;
 		std::uniform_real_distribution<float> posY(-1.0f, 1.0f);
 		std::uniform_real_distribution<float> posX(-aspect, aspect);
-		std::uniform_real_distribution<float> dir(-0.0001f, 0.0001f);
+		std::uniform_real_distribution<float> dir(-0.1f, 0.1f);
 		std::uniform_real_distribution<float> color(0.5f, 1.0f);
 		//	std::uniform_real_distribution<float> gradient(0.0f, 0.5f);
 
@@ -58,14 +58,14 @@ public:
 
 	}
 
-	void update() {
+	void update(float dt) {
 
 
 		madeFriends();
 
 		for (auto& boid : Boids)
 		{
-			boid.update(aspect);
+			boid.update(aspect, dt);
 		}
 	}
 

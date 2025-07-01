@@ -11,7 +11,7 @@ public:
 
 	std::vector<Boid*> friends;
 
-	void update(float aspect);
+	void update(float aspect,float deltaTime);
 
 	void handleBoundaries(float aspect);
 	

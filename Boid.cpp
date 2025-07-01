@@ -4,9 +4,9 @@
 # define M_PI           3.14159265358979323846  /* pi */
 
 
-void Boid::update(float aspect) {
+void Boid::update(float aspect, float deltaTime) {
 
-	this->pos += dir;
+	this->pos += dir * deltaTime;
 
 	handleBoundaries(aspect);
 }

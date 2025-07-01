@@ -277,7 +277,7 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
         
-        sim.update();
+        sim.update(deltaTime);
         updateInstanceBuffer();
         render();
     }
