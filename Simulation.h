@@ -17,7 +17,12 @@ public:
 
 	float fov = 0.5f;
 	float fovRadius = 0.3f;
+	unsigned int frameCount = 0;
 
+	bool alignment     = 0.00000001f;
+	bool cohesion	  = 1.0f;
+	bool separation   = 1.0f;
+	
 	void setupSimulation(unsigned int N) {
 
 		std::random_device rd;
@@ -61,11 +66,14 @@ public:
 	void update(float dt) {
 
 
-		madeFriends();
+		if (frameCount % 2 == 0) madeFriends();
+		frameCount++;
+
+	//	showFriends();
 
 		for (auto& boid : Boids)
 		{
-			boid.update(aspect, dt);
+			boid.update(alignment, cohesion, separation, aspect, dt);
 		}
 	}
 
@@ -89,17 +97,19 @@ public:
 				if ((*boid).getFriend(&(*potentialFriend), fov, fovRadius)) {
 					(*boid).friends.push_back(&(*potentialFriend));
 				}
-				else {
+			
+				if ((*potentialFriend).getFriend(&(*boid), fov, fovRadius)) {
+					(*potentialFriend).friends.push_back(&(*boid));
 				}
+
 				potentialFriend++;
 
 			}
 			boid++;
 		}
-	}
+	} 
 
-
-/*void madeFriends() {
+void showFriends() {
 
 		auto boid = Boids.begin();
 
@@ -113,16 +123,16 @@ public:
 
 				if ((*boid).getFriend(&(*potentialFriend), fov, fovRadius)) {
 					(*boid).friends.push_back(&(*potentialFriend));
-					(*potentialFriend).color={1,0,0}
+					(*potentialFriend).color = { 1,0,0 };
 				}
 				else {
-					(*potentialFriend).color = {0.2,0.2,0.2}
+					(*potentialFriend).color = { 0.2,0.2,0.2 };
 				}
 				potentialFriend++;
 
 			}
 			boid++;
 		}
-	}*/
+	}
 };
 

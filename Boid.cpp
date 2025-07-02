@@ -4,7 +4,28 @@
 # define M_PI           3.14159265358979323846  /* pi */
 
 
-void Boid::update(float aspect, float deltaTime) {
+void Boid::update(float alignmentStength, float cohesionStrength, float seperationStrength, float aspect, float deltaTime) {
+
+
+	if (!friends.empty()) {
+
+		float speed = dir.length();
+
+		glm::vec2 alignment(0.0f, 0.0f);
+
+		for (auto& Friend : friends) {
+
+			alignment += Friend->dir;
+
+
+		}
+		alignment /= (float)friends.size();
+
+		dir += alignment*alignmentStength;
+		dir = glm::normalize(dir) * speed;
+	}
+
+
 
 	this->pos += dir * deltaTime;
 
