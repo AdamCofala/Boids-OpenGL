@@ -12,9 +12,9 @@
 // Global variables
 GLuint SCR_WIDTH = 1200;
 GLuint SCR_HEIGHT = 720;
-const int N = 500; // Number of boids
+const int N = 1000; // Number of boids
 const int maxBufferSize = 10000; // max buffer size
-int scale = 2.0f;
+int scale = 1.0f;
 
 float aspect = (float)SCR_WIDTH / (float)SCR_HEIGHT;
 int   frame = 0;

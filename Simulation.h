@@ -19,16 +19,17 @@ public:
 	float fovRadius = 0.3f;
 	unsigned int frameCount = 0;
 
-	bool alignment     = 0.00000001f;
-	bool cohesion	  = 1.0f;
-	bool separation   = 1.0f;
+	float alignment   = 2.0f;
+	float cohesion	  = 2.0f;
+	float separation  = 1.0f;
+	unsigned int friendUpdate = 2;
 	
 	void setupSimulation(unsigned int N) {
 
 		std::random_device rd;
 		std::uniform_real_distribution<float> posY(-1.0f, 1.0f);
 		std::uniform_real_distribution<float> posX(-aspect, aspect);
-		std::uniform_real_distribution<float> dir(-0.1f, 0.1f);
+		std::uniform_real_distribution<float> dir(-0.3f, 0.3f);
 		std::uniform_real_distribution<float> color(0.5f, 1.0f);
 		//	std::uniform_real_distribution<float> gradient(0.0f, 0.5f);
 
@@ -39,6 +40,11 @@ public:
 			glm::vec2 posVec = { posX(gen), posY(gen) };
 			glm::vec2 dirVec = { dir(gen), dir(gen) };
 			glm::vec3 colorVec = { color(gen), color(gen), color(gen) };
+
+
+			if (glm::length(dirVec) < 0.2f) {
+				dirVec = glm::normalize(dirVec) * 0.2f;
+			}
 
 			/*	if (colorVec.x > 0.8f) {
 					colorVec.y = gradient(gen);
@@ -66,7 +72,7 @@ public:
 	void update(float dt) {
 
 
-		if (frameCount % 2 == 0) madeFriends();
+		if (frameCount % friendUpdate == 0) madeFriends();
 		frameCount++;
 
 	//	showFriends();
