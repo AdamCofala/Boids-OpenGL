@@ -11,14 +11,14 @@ public:
 
 	std::vector<Boid*> friends;
 
-	void update(float aligmentStength, float cohesionStrength, float seperationStrength, float aspect,float deltaTime);
+	void update(float aligmentStength, float cohesionStrength, float seperationStrength, float aspect,float deltaTime, float minSpeed, float maxSpeed);
 
 	void handleBoundaries(float aspect);
+
+
+	void bounceBoundaries(float aspect);
 	
 	float getRotation();
-	glm::vec2 getSeparation();
-	glm::vec2 getAlignment();
-	glm::vec2 getCohesion();
 
 	bool getFriend(Boid* potentialFriend, float fov, float fovRadius);
 

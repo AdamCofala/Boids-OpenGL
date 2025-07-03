@@ -19,10 +19,13 @@ public:
 	float fovRadius = 0.3f;
 	unsigned int frameCount = 0;
 
-	float alignment   = 2.0f;
-	float cohesion	  = 2.0f;
-	float separation  = 1.0f;
-	unsigned int friendUpdate = 2;
+	float alignment    = 2.0f;
+	float cohesion	   = 3.0f;
+	float separation   = 1.0f;
+	float maxSpeed     = 0.5f; 
+    float minSpeed     = 0.2f;
+	int   friendUpdate = 1;
+//	bool bounce = true;
 	
 	void setupSimulation(unsigned int N) {
 
@@ -31,7 +34,7 @@ public:
 		std::uniform_real_distribution<float> posX(-aspect, aspect);
 		std::uniform_real_distribution<float> dir(-0.3f, 0.3f);
 		std::uniform_real_distribution<float> color(0.5f, 1.0f);
-		//	std::uniform_real_distribution<float> gradient(0.0f, 0.5f);
+		std::uniform_real_distribution<float> gradient(0.0f, 0.5f);
 
 		std::mt19937 gen(rd());
 
@@ -46,7 +49,7 @@ public:
 				dirVec = glm::normalize(dirVec) * 0.2f;
 			}
 
-			/*	if (colorVec.x > 0.8f) {
+			if (colorVec.x > 0.8f) {
 					colorVec.y = gradient(gen);
 					colorVec.z = gradient(gen);
 				}
@@ -59,7 +62,7 @@ public:
 				if (colorVec.z > 0.8f) {
 					colorVec.y = gradient(gen);
 					colorVec.x = gradient(gen);
-				} */
+				} 
 
 
 
@@ -79,7 +82,7 @@ public:
 
 		for (auto& boid : Boids)
 		{
-			boid.update(alignment, cohesion, separation, aspect, dt);
+			boid.update(alignment, cohesion, separation, aspect, dt, minSpeed, maxSpeed);
 		}
 	}
 

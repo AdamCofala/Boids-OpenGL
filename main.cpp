@@ -28,13 +28,19 @@ Simulation sim(N, aspect);
 GLFWwindow* window = nullptr;
 std::string windowTitle = "Boids, FPS: ";
 GLuint VAO, meshVBO, instanceVBO, shaderProgram;
+GLuint hdrFBO, colorBuffers[2], pingpongFBO[2], pingpongColorbuffers[2];
+
 
 const GLfloat boidMesh[] = {
-    // Triangle vertices (local space, pointing right)
      0.02f,  0.0f,    // tip
-    -0.01f,  0.008f,  // back top
-    -0.01f, -0.008f   // back bottom
+    -0.01f,  0.01f,   // top tail
+    -0.005f, 0.002f,  // upper mid
+
+    -0.005f, 0.002f,  // upper mid
+    -0.01f, -0.01f,   // bottom tail
+     0.02f,  0.0f     // tip
 };
+
 
 struct BoidInstance {
     glm::vec2 position;
@@ -224,6 +230,7 @@ void setupBuffers() {
     glDepthMask(GL_FALSE);
 }
 
+
 void updateInstanceBuffer() {
 
     for (int i = 0; i < sim.Boids.size(); i++) {
@@ -257,7 +264,7 @@ void render() {
     glBindVertexArray(VAO);
 
     // Single instanced draw call for all boids
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 3, N);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, N);
 
     glfwSwapBuffers(window);
 }
