@@ -27,7 +27,7 @@ public:
 	int   friendUpdate = 2;
 
 	bool atract = false;
-//	bool bounce = true;
+	glm::vec2 mousePoint;
 	
 	void setupSimulation(unsigned int N) {
 
@@ -84,7 +84,7 @@ public:
 
 		for (auto& boid : Boids)
 		{
-			boid.update(alignment, cohesion, separation, aspect, dt, minSpeed, maxSpeed);
+			boid.update(alignment, cohesion, separation, aspect, dt, minSpeed, maxSpeed, mousePoint, atract);
 		}
 	}
 

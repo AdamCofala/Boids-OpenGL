@@ -84,6 +84,7 @@ void render();
 void cleanup();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+glm::vec2 ScreenToWorld(double xpos, double ypos);
 
 
 bool initializeOpenGL() {
@@ -326,19 +327,25 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
 
-        // Convert screen to NDC
-        float xNDC = (2.0f * xpos) / SCR_WIDTH - 1.0f;
-        float yNDC = 1.0f - (2.0f * ypos) / SCR_HEIGHT;
-        float worldX = xNDC * aspect;
-        float worldY = yNDC;
-
-        std::cout << "Mouse held at: (" << worldX << ", " << worldY << ")" << std::endl;
-
-        // Optional: Do something with worldX, worldY (like attract boids)
+        glm::vec2 point = ScreenToWorld(xpos, ypos);
+        sim.mousePoint = point;
+        sim.atract = true;
     }
-
+    else {
+        sim.atract = false;
+    }
 }
 
+glm::vec2 ScreenToWorld(double xpos, double ypos) {
+     
+	float xNDC = (2.0f * xpos) / SCR_WIDTH - 1.0f;
+	float yNDC = 1.0f - (2.0f * ypos) / SCR_HEIGHT;
+	float worldX = xNDC * aspect;
+	float worldY = yNDC;
+
+    return glm::vec2(worldX, worldY);
+
+}
 
 void cleanup() {
     delete[] boids;

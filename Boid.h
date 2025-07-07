@@ -12,7 +12,7 @@ public:
 
 	std::vector<Boid*> friends;
 
-	void update(float aligmentStength, float cohesionStrength, float seperationStrength, float aspect,float deltaTime, float minSpeed, float maxSpeed);
+	void update(float aligmentStength, float cohesionStrength, float seperationStrength, float aspect,float deltaTime, float minSpeed, float maxSpeed, glm::vec2 mousePoint, bool atract);
 
 	void handleBoundaries(float aspect);
 
