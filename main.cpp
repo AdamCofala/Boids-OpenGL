@@ -31,6 +31,7 @@ GLuint VAO, meshVBO, instanceVBO, shaderProgram;
 
 // Mouse state tracking
 bool leftMousePressed = false;
+bool rightMousePressed = false;
 
 const GLfloat boidMesh[] = {
     // Triangle vertices (local space, pointing right)
@@ -324,11 +325,26 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
             sim.atract = false;
         }
     }
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+		if (action == GLFW_PRESS) {
+				rightMousePressed = true;
+				double xpos, ypos;
+				glfwGetCursorPos(window, &xpos, &ypos);
+				sim.mousePoint = ScreenToWorld(xpos, ypos);
+				sim.repel = true;
+		}
+		else if (action == GLFW_RELEASE) {
+				rightMousePressed = false;
+				sim.repel = false;
+		}
+    }
+
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     // Only update mouse position if left mouse button is pressed
-    if (leftMousePressed) {
+    if (leftMousePressed || rightMousePressed) {
         sim.mousePoint = ScreenToWorld(xpos, ypos);
     }
 }

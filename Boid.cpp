@@ -11,7 +11,7 @@ std::mt19937 gen(rd());
 
 
 
-void Boid::update(float alignmentStrength, float cohesionStrength, float separationStrength, float aspect, float deltaTime, float minSpeed, float maxSpeed, glm::vec2 mousePoint, bool atract) {
+void Boid::update(float alignmentStrength, float cohesionStrength, float separationStrength, float aspect, float deltaTime, float minSpeed, float maxSpeed, glm::vec2 mousePoint, bool atract, bool repel) {
 
       if (!friends.empty()) {
 
@@ -72,6 +72,23 @@ void Boid::update(float alignmentStrength, float cohesionStrength, float separat
                     dir += force * deltaTime;
                 }
             }
+
+		   if (repel) {
+                glm::vec2 toMouse = mousePoint - this->pos;
+                float distance = glm::length(toMouse);
+
+                if (distance > 0.01f) { // Avoid division by zero
+                    float attractionStrength = 0.5f; // Adjust this value
+                    glm::vec2 force = (toMouse / distance) * (attractionStrength / (distance * distance));
+
+                    if (glm::length(force) > 10.0f) {
+                        force = glm::normalize(force) * 10.0f;
+                    }
+                    dir -= force * deltaTime;
+                }
+		   }
+
+
       }
 
        // this->color = getSpeedColor(glm::length(dir), minSpeed, maxSpeed);
