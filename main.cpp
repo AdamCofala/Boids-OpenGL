@@ -29,6 +29,8 @@ GLFWwindow* window = nullptr;
 std::string windowTitle = "Boids, FPS: ";
 GLuint VAO, meshVBO, instanceVBO, shaderProgram;
 
+// Mouse state tracking
+bool leftMousePressed = false;
 
 const GLfloat boidMesh[] = {
     // Triangle vertices (local space, pointing right)
@@ -84,6 +86,7 @@ void render();
 void cleanup();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 glm::vec2 ScreenToWorld(double xpos, double ypos);
 
 
@@ -110,8 +113,7 @@ bool initializeOpenGL() {
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
-
-
+    glfwSetCursorPosCallback(window, cursor_position_callback);
 
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -235,11 +237,11 @@ void setupBuffers() {
 void updateInstanceBuffer() {
 
     for (int i = 0; i < sim.Boids.size(); i++) {
-         boids[i].position = sim.Boids[i].pos;
+        boids[i].position = sim.Boids[i].pos;
 
-         boids[i].scale = scale;
-         boids[i].rotation = sim.Boids[i].getRotation();
-         boids[i].color = sim.Boids[i].color * 1.2f;
+        boids[i].scale = scale;
+        boids[i].rotation = sim.Boids[i].getRotation();
+        boids[i].color = sim.Boids[i].color * 1.2f;
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
@@ -276,14 +278,14 @@ int main() {
     setupBuffers();
 
     updateInstanceBuffer();
-   
+
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
-        
+
         sim.update(deltaTime);
         updateInstanceBuffer();
         render();
@@ -308,40 +310,35 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-   /* if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
-
-        std::cout << "Left mouse clicked at: " << xpos << ", " << ypos << std::endl;
-
-        // Convert to OpenGL NDC (-1 to 1)
-        float xNDC = (2.0f * xpos) / SCR_WIDTH - 1.0f;
-        float yNDC = 1.0f - (2.0f * ypos) / SCR_HEIGHT;
-
-        std::cout << "Converted to OpenGL coords: (" << xNDC << ", " << yNDC << ")" << std::endl;
-
-        // You can now interact with Boids or trigger logic here
-    } */
-
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-        double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
-
-        glm::vec2 point = ScreenToWorld(xpos, ypos);
-        sim.mousePoint = point;
-        sim.atract = true;
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if (action == GLFW_PRESS) {
+            leftMousePressed = true;
+            // Update mouse position immediately when pressed
+            double xpos, ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+            sim.mousePoint = ScreenToWorld(xpos, ypos);
+            sim.atract = true;
+        }
+        else if (action == GLFW_RELEASE) {
+            leftMousePressed = false;
+            sim.atract = false;
+        }
     }
-    else {
-        sim.atract = false;
+}
+
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+    // Only update mouse position if left mouse button is pressed
+    if (leftMousePressed) {
+        sim.mousePoint = ScreenToWorld(xpos, ypos);
     }
 }
 
 glm::vec2 ScreenToWorld(double xpos, double ypos) {
-     
-	float xNDC = (2.0f * xpos) / SCR_WIDTH - 1.0f;
-	float yNDC = 1.0f - (2.0f * ypos) / SCR_HEIGHT;
-	float worldX = xNDC * aspect;
-	float worldY = yNDC;
+
+    float xNDC = (2.0f * xpos) / SCR_WIDTH - 1.0f;
+    float yNDC = 1.0f - (2.0f * ypos) / SCR_HEIGHT;
+    float worldX = xNDC * aspect;
+    float worldY = yNDC;
 
     return glm::vec2(worldX, worldY);
 

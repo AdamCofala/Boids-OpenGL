@@ -60,9 +60,16 @@ void Boid::update(float alignmentStrength, float cohesionStrength, float separat
 
             if (atract) {
                 glm::vec2 toMouse = mousePoint - this->pos;
+                float distance = glm::length(toMouse);
 
-                if (glm::length(toMouse) > 0.0f && glm::length(toMouse) < 1.0f) {
-                    dir += toMouse * 0.03f / glm::length(toMouse);
+                if (distance > 0.01f) { // Avoid division by zero
+                    float attractionStrength = 0.5f; // Adjust this value
+                    glm::vec2 force = (toMouse / distance) * (attractionStrength / (distance * distance));
+
+                    if (glm::length(force) > 10.0f) {
+                        force = glm::normalize(force) * 10.0f;
+                    }
+                    dir += force * deltaTime;
                 }
             }
       }
@@ -70,7 +77,7 @@ void Boid::update(float alignmentStrength, float cohesionStrength, float separat
        // this->color = getSpeedColor(glm::length(dir), minSpeed, maxSpeed);
         this->pos += dir * deltaTime;
 
-    bounceBoundaries(aspect);
+   // bounceBoundaries(aspect);
     handleBoundaries(aspect);
 }
 
