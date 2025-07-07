@@ -24,7 +24,9 @@ public:
 	float separation   = 1.0f;
 	float maxSpeed     = 0.5f; 
     float minSpeed     = 0.2f;
-	int   friendUpdate = 1;
+	int   friendUpdate = 2;
+
+	bool atract = false;
 //	bool bounce = true;
 	
 	void setupSimulation(unsigned int N) {
@@ -52,17 +54,17 @@ public:
 			if (colorVec.x > 0.8f) {
 					colorVec.y = gradient(gen);
 					colorVec.z = gradient(gen);
-				}
+			}
 
-				if (colorVec.y > 0.8f) {
+			if (colorVec.y > 0.8f) {
 					colorVec.x = gradient(gen);
 					colorVec.z = gradient(gen);
-				}
+			}
 
-				if (colorVec.z > 0.8f) {
+			if (colorVec.z > 0.8f) {
 					colorVec.y = gradient(gen);
 					colorVec.x = gradient(gen);
-				} 
+			} 
 
 
 
@@ -117,6 +119,7 @@ public:
 			boid++;
 		}
 	} 
+
 
 void showFriends() {
 

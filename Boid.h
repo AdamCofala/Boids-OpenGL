@@ -8,6 +8,7 @@ public:
 	glm::vec2 pos;
 	glm::vec2 dir;
 	glm::vec3 color;
+	glm::vec3 blendedColor = { 0,0,0 };
 
 	std::vector<Boid*> friends;
 
@@ -17,6 +18,8 @@ public:
 
 
 	void bounceBoundaries(float aspect);
+
+	glm::vec3 getSpeedColor(float speed, float minSpeed, float maxSpeed);
 	
 	float getRotation();
 

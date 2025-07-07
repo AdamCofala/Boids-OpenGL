@@ -28,19 +28,14 @@ Simulation sim(N, aspect);
 GLFWwindow* window = nullptr;
 std::string windowTitle = "Boids, FPS: ";
 GLuint VAO, meshVBO, instanceVBO, shaderProgram;
-GLuint hdrFBO, colorBuffers[2], pingpongFBO[2], pingpongColorbuffers[2];
 
 
 const GLfloat boidMesh[] = {
+    // Triangle vertices (local space, pointing right)
      0.02f,  0.0f,    // tip
-    -0.01f,  0.01f,   // top tail
-    -0.005f, 0.002f,  // upper mid
-
-    -0.005f, 0.002f,  // upper mid
-    -0.01f, -0.01f,   // bottom tail
-     0.02f,  0.0f     // tip
+    -0.01f,  0.008f,  // back top
+    -0.01f, -0.008f,   // back bottom
 };
-
 
 struct BoidInstance {
     glm::vec2 position;
@@ -88,6 +83,8 @@ void updateInstanceBuffer();
 void render();
 void cleanup();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+
 
 bool initializeOpenGL() {
     // Initialize GLFW
@@ -111,6 +108,9 @@ bool initializeOpenGL() {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+
+
 
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -238,7 +238,7 @@ void updateInstanceBuffer() {
 
          boids[i].scale = scale;
          boids[i].rotation = sim.Boids[i].getRotation();
-         boids[i].color = sim.Boids[i].color;
+         boids[i].color = sim.Boids[i].color * 1.2f;
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
@@ -274,9 +274,8 @@ int main() {
     if (!createShaders()) return -1;
     setupBuffers();
 
-    // Main loop
-
-     updateInstanceBuffer();
+    updateInstanceBuffer();
+   
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -306,6 +305,40 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 }
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+   /* if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
+        std::cout << "Left mouse clicked at: " << xpos << ", " << ypos << std::endl;
+
+        // Convert to OpenGL NDC (-1 to 1)
+        float xNDC = (2.0f * xpos) / SCR_WIDTH - 1.0f;
+        float yNDC = 1.0f - (2.0f * ypos) / SCR_HEIGHT;
+
+        std::cout << "Converted to OpenGL coords: (" << xNDC << ", " << yNDC << ")" << std::endl;
+
+        // You can now interact with Boids or trigger logic here
+    } */
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
+        // Convert screen to NDC
+        float xNDC = (2.0f * xpos) / SCR_WIDTH - 1.0f;
+        float yNDC = 1.0f - (2.0f * ypos) / SCR_HEIGHT;
+        float worldX = xNDC * aspect;
+        float worldY = yNDC;
+
+        std::cout << "Mouse held at: (" << worldX << ", " << worldY << ")" << std::endl;
+
+        // Optional: Do something with worldX, worldY (like attract boids)
+    }
+
+}
+
 
 void cleanup() {
     delete[] boids;
