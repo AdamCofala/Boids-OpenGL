@@ -18,7 +18,6 @@ void Boid::update(float alignmentStrength, float cohesionStrength, float separat
 			glm::vec2 alignment(0.0f, 0.0f);
 			glm::vec2 cohesion(0.0f, 0.0f);
 			glm::vec2 sepeatation(0.0f, 0.0f);
-
             blendedColor *= 0.0f;
 
 			for (auto& Friend : friends) {
@@ -41,13 +40,38 @@ void Boid::update(float alignmentStrength, float cohesionStrength, float separat
 
 			cohesion /= (float)friends.size();
 			cohesion -= this->pos;
-
 			dir += cohesion * cohesionStrength * deltaTime;
 			
 			dir += sepeatation * separationStrength * deltaTime;
 
+            glm::vec2 steerForce(steer(gen), steer(gen));
+            dir += steerForce * 0.03f;
 
-			float currentSpeed = glm::length(dir);
+
+            if (atract) {
+                glm::vec2 toMouse = mousePoint - this->pos;
+                float distance = glm::length(toMouse);
+
+                if (distance > 0.01f) {
+                    float attractionStrength = 5.3f;
+                    float force = attractionStrength * exp(-distance * 2.0f);
+                    dir += glm::normalize(toMouse) * force * deltaTime;
+                }
+
+            }
+           
+            if (repel) {
+                glm::vec2 toMouse = mousePoint - this->pos;
+                float distance = glm::length(toMouse);
+
+                if (distance > 0.01f) {
+                    float attractionStrength = 5.3f;
+                    float force = attractionStrength * exp(-distance * 2.0f);
+                    dir -= glm::normalize(toMouse) * force * deltaTime;
+                }
+            }
+
+        	float currentSpeed = glm::length(dir);
 			if (currentSpeed > maxSpeed) {
 				dir = glm::normalize(dir) * maxSpeed;
 			}
@@ -55,43 +79,9 @@ void Boid::update(float alignmentStrength, float cohesionStrength, float separat
 				dir = glm::normalize(dir) * minSpeed;
 			}
 
-            glm::vec2 steerForce(steer(gen), steer(gen));
-            dir += steerForce * 0.03f;
-
-            if (atract) {
-                glm::vec2 toMouse = mousePoint - this->pos;
-                float distance = glm::length(toMouse);
-
-                if (distance > 0.01f) { // Avoid division by zero
-                    float attractionStrength = 0.5f; // Adjust this value
-                    glm::vec2 force = (toMouse / distance) * (attractionStrength / (distance * distance));
-
-                    if (glm::length(force) > 10.0f) {
-                        force = glm::normalize(force) * 10.0f;
-                    }
-                    dir += force * deltaTime;
-                }
-            }
-
-		   if (repel) {
-                glm::vec2 toMouse = mousePoint - this->pos;
-                float distance = glm::length(toMouse);
-
-                if (distance > 0.01f) { // Avoid division by zero
-                    float attractionStrength = 0.5f; // Adjust this value
-                    glm::vec2 force = (toMouse / distance) * (attractionStrength / (distance * distance));
-
-                    if (glm::length(force) > 10.0f) {
-                        force = glm::normalize(force) * 10.0f;
-                    }
-                    dir -= force * deltaTime;
-                }
-		   }
-
-
       }
 
-       // this->color = getSpeedColor(glm::length(dir), minSpeed, maxSpeed);
+		//this->color = getSpeedColor(glm::length(dir), minSpeed, maxSpeed);
         this->pos += dir * deltaTime;
 
    // bounceBoundaries(aspect);
