@@ -9,17 +9,17 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include "imgui/imgui.h"
-#include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
 
 #include "Simulation.h"
 
 // Global variables
-GLuint SCR_WIDTH = 1200;
-GLuint SCR_HEIGHT = 720;
-const int N = 1000; // Number of boids
+GLuint SCR_WIDTH = 1400;
+GLuint SCR_HEIGHT = 900;
+int N = 500; // Number of boids
 const int maxBufferSize = 10000; // max buffer size
 int scale = 1.0f;
 
@@ -33,7 +33,6 @@ Simulation sim(N, aspect);
 
 // OpenGL objects
 GLFWwindow* window = nullptr;
-std::string windowTitle = "Boids, FPS: ";
 GLuint VAO, meshVBO, instanceVBO, shaderProgram;
 
 ImGuiIO* io = nullptr;
@@ -42,6 +41,7 @@ ImGuiStyle style;
 // Mouse state tracking
 bool leftMousePressed = false;
 bool rightMousePressed = false;
+bool middleMousePressed= false;
 
 const GLfloat boidMesh[] = {
     // Triangle vertices (local space, pointing right)
@@ -180,109 +180,143 @@ bool initializeImGUI() {
 
     //IMGUI STYLE
     {
-        // Style variables
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);        // Slightly larger rounding for modern look
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);         // Consistent rounded elements
-        ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, 4.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, 4.0f);          // Matched with frame rounding
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12, 8));// More balanced paddin
+        // Style variables - Retain existing or slightly adjust for a softer sci-fi feel
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.0f); // Slightly more rounded windows
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);   // More rounded interactive elements
+        ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, 5.0f); // Consistent rounding
+        ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, 5.0f);     // Match frame rounding
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 10)); // Increased padding for a cleaner look
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 6));    // Slight increase in item spacing
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(6, 4)); //
 
-        // Color palette
-       // Window background
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.12f, 0.12f, 0.16f, 0.95f));  // Nearly opaque with just a hint of transparency
-        ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.14f, 0.14f, 0.18f, 0.99f));  // Popups nearly as opaque
+        // Color palette - Shift towards sci-fi tones (blues, purples, greens, subtle desaturation)
+        // Window background - Dark, desaturated blue/grey for a deep space feel
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.08f, 0.08f, 0.12f, 0.90f)); // Nearly opaque dark blue-grey
+        ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.10f, 0.10f, 0.15f, 0.99f)); // Slightly lighter for popups
 
-        // Borders
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.30f, 0.30f, 0.40f, 0.60f));  // Subtle, slightly transparent border
-        ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.00f, 0.00f, 0.00f, 0.30f));  // Soft shadow for depth
+        // Borders - Subtle glowing effect or clean lines
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.25f, 0.40f, 0.55f, 0.70f)); // Muted blue border
+        ImGui::PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0.00f, 0.00f, 0.00f, 0.00f)); // No shadow for a flatter, digital look
 
-        // Frames (e.g. input fields, checkboxes)
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.20f, 0.20f, 0.25f, 1.00f));  // Solid background for frames
-        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.30f, 0.25f, 0.45f, 0.60f));  // Slightly transparent on hover
-        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.40f, 0.35f, 0.60f, 0.80f));  // Active state with increased opacity for clarity
+        // Frames (e.g. input fields, checkboxes) - Clean, functional look
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.15f, 0.15f, 0.20f, 1.00f)); // Darker base for frames
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.20f, 0.25f, 0.35f, 0.70f)); // Subtle blue highlight on hover
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.25f, 0.30f, 0.45f, 0.90f)); // More pronounced active state
 
-        // Buttons
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.40f, 0.45f, 0.80f, 0.80f));  // Modern saturated look
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.50f, 0.55f, 0.95f, 0.90f));  // Brighter on hover
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.60f, 0.50f, 1.00f, 1.00f));  // Fully saturated when active
+        // Buttons - Prominent, interactive elements with a distinct sci-fi glow
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.40f, 0.65f, 0.85f)); // Vibrant blue button
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.55f, 0.85f, 0.95f)); // Brighter, more saturated on hover
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.35f, 0.70f, 1.00f, 1.00f)); // Intense active glow
 
-        // Sliders
-        ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.50f, 0.55f, 0.90f, 0.80f));  // Clear slider grab
-        ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.70f, 0.60f, 1.00f, 1.00f));  // More vivid when active
+        // Sliders - Clear, functional with a glowing indicator
+        ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.20f, 0.50f, 0.75f, 0.90f)); // Distinct blue grab
+        ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.30f, 0.65f, 0.95f, 1.00f)); // Brighter when active
 
-        // Headers (e.g. tree nodes, collapsing headers)
-        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.35f, 0.40f, 0.70f, 0.80f));  // Subdued, balanced header color
-        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.45f, 0.50f, 0.85f, 0.90f));  // Slightly brighter on hover
-        ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.60f, 0.50f, 1.00f, 1.00f));  // Fully saturated when active
+        // Headers (e.g. tree nodes, collapsing headers) - Subtle, organized sections
+        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.12f, 0.28f, 0.40f, 0.80f)); // Muted blue header
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.18f, 0.38f, 0.55f, 0.90f)); // Slightly brighter on hover
+        ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.25f, 0.50f, 0.75f, 1.00f)); // More active blue
 
-        // Scrollbar
-        ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, ImVec4(0.10f, 0.10f, 0.12f, 0.60f));  // Background for scrollbars
-        ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.30f, 0.30f, 0.40f, 0.60f));  // Grab area for scrollbars
-        ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, ImVec4(0.40f, 0.40f, 0.50f, 0.80f));  // Lighter when hovered
-        ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, ImVec4(0.50f, 0.50f, 0.60f, 1.00f));  // Distinct active state
+        // Scrollbar - Integrated and subtle
+        ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, ImVec4(0.06f, 0.06f, 0.09f, 0.60f)); // Darker scrollbar background
+        ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.15f, 0.25f, 0.35f, 0.60f)); // Muted grab color
+        ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, ImVec4(0.20f, 0.30f, 0.45f, 0.80f)); // Slight highlight
+        ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, ImVec4(0.25f, 0.40f, 0.55f, 1.00f)); // More prominent when active
 
-        // Title Bar (e.g. window title bar when active)
-        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.18f, 0.18f, 0.24f, 1.00f));  // Strong visual identity for active title bars
+        // Title Bar (e.g. window title bar when active) - Distinct, but not overly distracting
+        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.10f, 0.20f, 0.30f, 1.00f)); // Darker, distinct active title bar
 
-        // Check Mark (for checkboxes and radio buttons)
-        ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(0.70f, 0.65f, 1.00f, 1.00f));  // Brighter and more visible check marks
-        // If you have additional custom styling, add them here…
+        // Check Mark (for checkboxes and radio buttons) - Bright, clear indicator
+        ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(0.20f, 0.70f, 0.30f, 1.00f)); // Bright green check mark
+
+        // Text color - Standard white/light grey, but can be adjusted for a subtle blue tint
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.90f, 0.95f, 1.00f, 1.00f)); // Slightly blue-tinted white text
+        ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImVec4(0.40f, 0.45f, 0.50f, 1.00f)); // Muted text for disabled items
+
+        // Separators - Subtle, yet visible
+        ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.20f, 0.35f, 0.50f, 0.60f)); // Blue-tinted separator
+        ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, ImVec4(0.25f, 0.40f, 0.60f, 0.80f)); //
+        ImGui::PushStyleColor(ImGuiCol_SeparatorActive, ImVec4(0.30f, 0.50f, 0.70f, 1.00f)); //
+
+        // Plot colors (if you use ImGui::PlotLines or ImGui::PlotHistogram)
+        ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(0.15f, 0.80f, 0.40f, 1.00f)); // Green for data plots
+        ImGui::PushStyleColor(ImGuiCol_PlotLinesHovered, ImVec4(0.20f, 0.90f, 0.50f, 1.00f)); //
+        ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.80f, 0.40f, 0.15f, 1.00f)); // Orange for histograms
+        ImGui::PushStyleColor(ImGuiCol_PlotHistogramHovered, ImVec4(0.90f, 0.50f, 0.20f, 1.00f)); //
+
+        // NavHighlight (for keyboard/gamepad navigation) - A clear focus indicator
+        ImGui::PushStyleColor(ImGuiCol_NavHighlight, ImVec4(0.20f, 0.60f, 1.00f, 1.00f)); // Bright blue highlight
+        ImGui::PushStyleColor(ImGuiCol_NavWindowingHighlight, ImVec4(0.70f, 0.70f, 0.70f, 0.70f)); //
+        ImGui::PushStyleColor(ImGuiCol_NavWindowingDimBg, ImVec4(0.80f, 0.80f, 0.80f, 0.20f)); //
+        ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4(0.20f, 0.20f, 0.20f, 0.35f)); //
     }
     return true;
 }
 
-void renderImgui(Simulation &sim)
+void renderImgui(Simulation& sim)
 {
+    // Remove glfwPollEvents() from here - it should be in main loop
+    // glfwPollEvents(); // REMOVE THIS LINE
 
-    glfwPollEvents();
     if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
     {
         ImGui_ImplGlfw_Sleep(10);
-        //continue;
+        return; // Add return to exit early when minimized
     }
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    //if (show_demo_window)
-   // ImGui::ShowDemoWindow();
+    // Fixed font scaling logic
+    float FontScale = 1.0f;
+    if (SCR_HEIGHT < 1920)
+    {
+        FontScale = 1.5f; // Adjust as needed
+    }
 
     
-        static float f = 0.0f;
-        static int counter = 0;
+    // Create the main UI window - REMOVED ImGuiWindowFlags_NoInputs
+    ImGui::Begin("Boids Simulation v1.0", nullptr,
+        ImGuiWindowFlags_NoCollapse |        // Prevent collapsing the window
+        ImGuiWindowFlags_NoMove |            // Prevent moving the window
+        ImGuiWindowFlags_NoResize |          // Prevent resizing the window
+        ImGuiWindowFlags_NoTitleBar |        // Remove the default title bar for a custom look
+        ImGuiWindowFlags_NoScrollbar |       // Remove scrollbar if content fits
+        ImGuiWindowFlags_AlwaysAutoResize  // Automatically resize to fit content
+    );
 
-		ImGui::Begin("StereoShape v1.2", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
-         //   ImGui::Begin("StereoShape v1.2", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
+    ImGui::SetWindowPos(ImVec2(0,0), ImGuiCond_Always);
+    ImGui::SetWindowSize(ImVec2(SCR_WIDTH / 3.0f, SCR_HEIGHT/2.25f), ImGuiCond_Always);
+    ImGui::PushTextWrapPos();
+    // Add actual UI elements for the boids simulation
+    ImGui::Text("Boids Simulation Controls");
+    ImGui::Separator();
 
-        ImGui::SetWindowPos(ImVec2(0, 0));
-        //float FontScale = float(SCR_HEIGHT) / 800 / 1.5;
+    // Add simulation parameters (you'll need to add these to your Simulation class)
 
-        if (SCR_HEIGHT < 1920)
-        {
-            float FontScale = 2;
-        }
-        float FontScale = 1;
+    ImGui::SliderFloat("Separation Weight", &sim.separation, 0.0f, 3.0f);
+    ImGui::SliderFloat("Alignment Weight", &sim.alignment, 0.0f, 10.0f);
+    ImGui::SliderFloat("Cohesion Weight", &sim.cohesion, 0.0f, 10.0f);
+    ImGui::SliderFloat("Max Speed", &sim.maxSpeed, 0.001f, 1.5f);
+    ImGui::SliderInt("FPS UPGRADE", &sim.friendUpdate, 1, 10);
+    ImGui::Checkbox("Bounce of edges" ,&sim.bounce);
+    ImGui::Checkbox("Friends making visualization" ,&sim.friendVisual);
+    ImGui::Checkbox("Color based on speed" ,&sim.speedCol);
 
+    ImGui::Separator();
+    ImGui::Text("Mouse Controls:");
+    ImGui::Text("Left Click: Attract boids");
+    ImGui::Text("Right Click: Repel boids");
 
-        //static float userFontScale = 1.198f;
-        static float userFontScale = 1.0f;
+    ImGui::Separator();
+    ImGui::Text("FPS: %d", FPS);
+    ImGui::Text("Boids: %d", N);
 
-        ImGui::SetWindowSize(ImVec2(SCR_WIDTH / 5.4 * userFontScale * 1.1, SCR_HEIGHT));
-
-        ImGui::GetIO().FontGlobalScale = FontScale * userFontScale;
-
-        // Display some text (you can use a format strings too)
-
-//ImGui::Checkbox("Another Window", &show_another_window);
-//ImGui::SliderInt("renderDistance", &renderDistance, 0, 16);
-// ImGui::SliderInt("world gen distance", &worldGenDistance, 0, 16);
-
+    ImGui::End();
 
     ImGui::Render();
-
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-
 }
 
 bool createShaders() {
@@ -358,7 +392,7 @@ void setupBuffers() {
 
     // Set up instance buffer
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, maxBufferSize * sizeof(BoidInstance), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, maxBufferSize * sizeof(BoidInstance), nullptr, GL_DYNAMIC_DRAW);
 
     // Instance attribute 1: Position (2D)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(BoidInstance), (void*)offsetof(BoidInstance, position));
@@ -399,33 +433,41 @@ void updateInstanceBuffer() {
 
         boids[i].scale = scale;
         boids[i].rotation = sim.Boids[i].getRotation();
-        boids[i].color = sim.Boids[i].color;
+        boids[i].color = sim.Boids[i].visColor;
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, N * sizeof(BoidInstance), boids);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<int>(sim.Boids.size()) * sizeof(BoidInstance), boids);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void render() {
 
     float currentFrame = static_cast<float>(glfwGetTime());
+    static float avgFPS = 0.0f;
+
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
     frame++;
-    if (frame % 5 == 0) {
-        FPS = (1 / deltaTime);
-        glfwSetWindowTitle(window, (windowTitle + std::to_string(FPS)).c_str());
+
+    avgFPS += 1 / deltaTime;
+    if (frame % 30 == 0) {
+        FPS = avgFPS/30;
+        avgFPS = 0.0f;
+
+
     }
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.1f, 0.1f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(shaderProgram);
     glBindVertexArray(VAO);
 
     // Single instanced draw call for all boids
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, N);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 3, sim.Boids.size());
+	renderImgui(sim);
+
 
     glfwSwapBuffers(window);
 }
@@ -448,7 +490,6 @@ int main() {
         sim.update(deltaTime);
         updateInstanceBuffer();
         render();
-        renderImgui(sim);
     }
 
     cleanup();
@@ -470,42 +511,71 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT) {
-        if (action == GLFW_PRESS) {
-            leftMousePressed = true;
-            // Update mouse position immediately when pressed
-            double xpos, ypos;
-            glfwGetCursorPos(window, &xpos, &ypos);
-            sim.mousePoint = ScreenToWorld(xpos, ypos);
-            sim.atract = true;
-        }
-        else if (action == GLFW_RELEASE) {
-            leftMousePressed = false;
-            sim.atract = false;
-        }
-    }
 
-    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-		if (action == GLFW_PRESS) {
-				rightMousePressed = true;
-				double xpos, ypos;
-				glfwGetCursorPos(window, &xpos, &ypos);
-				sim.mousePoint = ScreenToWorld(xpos, ypos);
-				sim.repel = true;
-		}
-		else if (action == GLFW_RELEASE) {
-				rightMousePressed = false;
-				sim.repel = false;
-		}
+    if (ImGui::GetCurrentContext() != nullptr) {
+
+        if (!(*io).WantCaptureMouse) {
+
+
+
+            if (button == GLFW_MOUSE_BUTTON_LEFT) {
+                if (action == GLFW_PRESS) {
+                    leftMousePressed = true;
+                    // Update mouse position immediately when pressed
+                    double xpos, ypos;
+                    glfwGetCursorPos(window, &xpos, &ypos);
+                    sim.mousePoint = ScreenToWorld(xpos, ypos);
+                    sim.atract = true;
+                }
+                else if (action == GLFW_RELEASE) {
+                    leftMousePressed = false;
+                    sim.atract = false;
+                }
+            }
+
+            if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+                if (action == GLFW_PRESS) {
+                    rightMousePressed = true;
+                    double xpos, ypos;
+                    glfwGetCursorPos(window, &xpos, &ypos);
+                    sim.mousePoint = ScreenToWorld(xpos, ypos);
+                    sim.repel = true;
+                }
+                else if (action == GLFW_RELEASE) {
+                    rightMousePressed = false;
+                    sim.repel = false;
+                }
+            }
+
+
+            if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+                if (action == GLFW_PRESS) {
+                    double xpos, ypos;
+                    glfwGetCursorPos(window, &xpos, &ypos);
+                    sim.mousePoint = ScreenToWorld(xpos, ypos);
+                    std::cout << "Middle mouse pressed at: " << xpos << ", " << ypos << std::endl;
+                    for (int i = 0; i < 100; i++) { sim.Boids.push_back(sim.generateBoid(sim.mousePoint)); }
+                    N = static_cast<int>(sim.Boids.size());
+                     
+                    middleMousePressed = true;
+                }
+                else if(action == GLFW_RELEASE) {
+                    middleMousePressed = false;
+                }
+            }
+
+        }
     }
 
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-    // Only update mouse position if left mouse button is pressed
-    if (leftMousePressed || rightMousePressed) {
-        sim.mousePoint = ScreenToWorld(xpos, ypos);
-    }
+
+
+	if (leftMousePressed || rightMousePressed || middleMousePressed) {
+		sim.mousePoint = ScreenToWorld(xpos, ypos);
+	}
+
 }
 
 glm::vec2 ScreenToWorld(double xpos, double ypos) {
