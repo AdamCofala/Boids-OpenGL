@@ -19,7 +19,7 @@
 // Global variables
 GLuint SCR_WIDTH = 1400;
 GLuint SCR_HEIGHT = 900;
-int N = 500; // Number of boids
+int N = 1000; // Number of boids
 const int maxBufferSize = 10000; // max buffer size
 int scale = 1.0f;
 
@@ -427,17 +427,23 @@ void setupBuffers() {
 
 
 void updateInstanceBuffer() {
+    int numBoids = static_cast<int>(sim.Boids.size());
 
-    for (int i = 0; i < sim.Boids.size(); i++) {
+    // Safety check
+    if (numBoids > maxBufferSize) {
+        std::cerr << "Error: Number of boids (" << numBoids << ") exceeds buffer size (" << maxBufferSize << ")" << std::endl;
+        numBoids = maxBufferSize;
+    }
+
+    for (int i = 0; i < numBoids; i++) {
         boids[i].position = sim.Boids[i].pos;
-
         boids[i].scale = scale;
         boids[i].rotation = sim.Boids[i].getRotation();
         boids[i].color = sim.Boids[i].visColor;
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<int>(sim.Boids.size()) * sizeof(BoidInstance), boids);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, numBoids * sizeof(BoidInstance), boids);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -553,13 +559,22 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                     double xpos, ypos;
                     glfwGetCursorPos(window, &xpos, &ypos);
                     sim.mousePoint = ScreenToWorld(xpos, ypos);
-                    std::cout << "Middle mouse pressed at: " << xpos << ", " << ypos << std::endl;
-                    for (int i = 0; i < 100; i++) { sim.Boids.push_back(sim.generateBoid(sim.mousePoint)); }
+
+                    for (int i = 0; i < 10; i++) {
+                        sim.Boids.push_back(sim.generateBoid(sim.mousePoint));
+                    }
+
+                    int oldN = N;
                     N = static_cast<int>(sim.Boids.size());
-                     
+
+                    if (N > oldN) {
+                        delete[] boids;
+                        boids = new BoidInstance[N];
+                    }
+
                     middleMousePressed = true;
                 }
-                else if(action == GLFW_RELEASE) {
+                else if (action == GLFW_RELEASE) {
                     middleMousePressed = false;
                 }
             }
