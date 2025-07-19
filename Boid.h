@@ -4,7 +4,7 @@
 
 class Boid {
 public:
-	Boid(glm::vec2 p, glm::vec2 d, glm::vec3 c={0,0,0}) : pos(p), dir(d), color(c){}
+	Boid(glm::vec2 p, glm::vec2 d, glm::vec3 c = { 0,0,0 }, bool ispred = false) : pos(p), dir(d), color(c), isPredator(ispred) {};
 	glm::vec2 pos;
 	glm::vec2 dir;
 	glm::vec3 color;
@@ -12,7 +12,9 @@ public:
 	glm::vec3 visColor;
 
 	std::vector<Boid*> friends;
-	std::vector<Boid>  relFriends;
+	std::vector<Boid*> predators;
+	bool isPredator;
+	bool isPanicked;
 
 	void update(float aligmentStength, float cohesionStrength, float seperationStrength, float aspect,float deltaTime, float minSpeed, float maxSpeed, glm::vec2 mousePoint, bool atract, bool repel, bool bounce, bool speedBasedColor);
 
@@ -29,10 +31,6 @@ public:
 	float getRotation();
 
 	bool getFriend(Boid* potentialFriend, float fov, float fovRadius);
-
-	bool getrelFriend(Boid potentialFriend, float fov, float fovRadius);
-
-
 
 
 };

@@ -3,6 +3,7 @@
 #include <vector>
 #include <random>
 #include <glm/glm.hpp>
+#include <omp.h>
 
 
 class Simulation {
@@ -34,7 +35,6 @@ public:
 
 	glm::vec2 mousePoint;
 	
-
 	void setupSimulation(unsigned int N) {
 
 		std::uniform_real_distribution<float> posY(-1.0f, 1.0f);
@@ -49,7 +49,7 @@ public:
 		}
 	}
 
-	Boid generateBoid(glm::vec2 &pos) {
+	Boid generateBoid(glm::vec2 &pos, bool predators = false) {
 
     	std::uniform_real_distribution<float> dir(-0.3f, 0.3f);
 		std::uniform_real_distribution<float> color(0.5f, 1.0f);
@@ -81,7 +81,7 @@ public:
 				colorVec.x = gradient(gen);
 		} 
 
-		Boid b(posVec, dirVec, colorVec);
+		Boid b(posVec, dirVec, colorVec, predators);
 		return b;
 
 	}
@@ -89,14 +89,13 @@ public:
 	void update(float dt) {
 
 
-		if (frameCount % friendUpdate == 0) {
+		if (frameCount % friendUpdate == 0) {                         
 			madeFriends();
 		}
 		frameCount++;
 
-		for (auto& boid : Boids)
-		{
-			boid.update(alignment, cohesion, separation, aspect, dt, minSpeed, maxSpeed, mousePoint, atract, repel, bounce, speedCol);
+		for (size_t i=0; i < Boids.size(); i++) {
+			Boids[i].update(alignment, cohesion, separation, aspect, dt, minSpeed, maxSpeed, mousePoint, atract, repel, bounce, speedCol);
 		}
 
 		if (friendVisual) showFriends();
@@ -106,27 +105,21 @@ public:
 		aspect = aspectNew;
 	}
 
-
 	void madeFriends() {
-
-
 		auto boid = Boids.begin();
 		while (boid < Boids.end()) {
 			(*boid).friends.clear();
+			(*boid).predators.clear();
 			auto potentialFriend = boid + 1;
 
 			while (potentialFriend < Boids.end()) {
 
 				if ((*boid).getFriend(&(*potentialFriend), fov, fovRadius)){}
-
-				if ((*potentialFriend).getFriend(&(*boid), fov, fovRadius)) {}
-
 				++potentialFriend;
 			}
 			++boid;
 		}
 	}
-
 
 	void showFriends() {
 

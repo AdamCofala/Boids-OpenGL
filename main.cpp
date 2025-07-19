@@ -28,6 +28,8 @@ int   frame = 0;
 int   FPS = 0;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+bool spawnPredators = false;
+int spawnCount = 1;
 
 Simulation sim(N, aspect);
 
@@ -299,15 +301,19 @@ void renderImgui(Simulation& sim)
     ImGui::SliderFloat("Alignment Weight", &sim.alignment, 0.0f, 10.0f);
     ImGui::SliderFloat("Cohesion Weight", &sim.cohesion, 0.0f, 10.0f);
     ImGui::SliderFloat("Max Speed", &sim.maxSpeed, 0.001f, 1.5f);
+    ImGui::SliderFloat("Min Speed", &sim.minSpeed, 0.001f, 1.5f);
     ImGui::SliderInt("FPS UPGRADE", &sim.friendUpdate, 1, 10);
     ImGui::Checkbox("Bounce of edges" ,&sim.bounce);
     ImGui::Checkbox("Friends making visualization" ,&sim.friendVisual);
     ImGui::Checkbox("Color based on speed" ,&sim.speedCol);
+    ImGui::SliderInt("Spawning count" ,&spawnCount, 1, 20);
+    ImGui::Checkbox("Spawn predators" , &spawnPredators);
 
     ImGui::Separator();
     ImGui::Text("Mouse Controls:");
     ImGui::Text("Left Click: Attract boids");
     ImGui::Text("Right Click: Repel boids");
+    ImGui::Text("Middle Click: Generate boids");
 
     ImGui::Separator();
     ImGui::Text("FPS: %d", FPS);
@@ -461,7 +467,6 @@ void render() {
         FPS = avgFPS/30;
         avgFPS = 0.0f;
 
-
     }
 
     glClearColor(0.1f, 0.1f, 0.1f, 0.1f);
@@ -560,8 +565,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                     glfwGetCursorPos(window, &xpos, &ypos);
                     sim.mousePoint = ScreenToWorld(xpos, ypos);
 
-                    for (int i = 0; i < 10; i++) {
-                        sim.Boids.push_back(sim.generateBoid(sim.mousePoint));
+                    for (int i = 0; i < spawnCount; i++) {
+                        sim.Boids.push_back(sim.generateBoid(sim.mousePoint, spawnPredators));
                     }
 
                     int oldN = N;

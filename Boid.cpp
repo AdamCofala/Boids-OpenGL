@@ -25,6 +25,10 @@ void Boid::update(
 
     ) {
 
+		glm::vec2 runAway(0.0f, 0.0f);
+		isPanicked = false;
+
+
 		if (!friends.empty()) {
 
 			glm::vec2 alignment(0.0f, 0.0f);
@@ -51,18 +55,39 @@ void Boid::update(
 
 			cohesion /= (float)friends.size();
 			cohesion -= this->pos;
+
+			if (isPredator) cohesion *= 2.0f;
 			dir += cohesion * cohesionStrength * deltaTime;
 
 			dir += sepeatation * separationStrength * deltaTime;
-
 		}
 
-		if (speedBasedColor) {
+		if (!predators.empty() && !isPredator) {
+			float predatorAvoidanceStrength = 0.1f;
+
+			for (auto& predator : predators) {
+				glm::vec2 toPredator = predator->pos - this->pos;
+				float distance = glm::length(toPredator);
+
+				float avoidanceStrength = predatorAvoidanceStrength / (distance * distance + 0.01f);
+				glm::vec2 avoidanceDir = -glm::normalize(toPredator);
+
+				runAway += avoidanceDir * avoidanceStrength;
+
+			}
+		
+		}
+		dir += runAway * deltaTime;
+
+		if (speedBasedColor && !isPredator) {
 			visColor = getSpeedColor(glm::length(dir), minSpeed, maxSpeed);
 		}
-		else {
+		else if(!isPredator){
 		    if(!friends.empty()) this->color= glm::mix(this->color, blendedColor, 0.05f);
             visColor = color;
+		}
+		else {
+			visColor = { 1.0f, 1.0f ,1.0f } ;
 		}
 
 		glm::vec2 steerForce(steer(gen), steer(gen));
@@ -166,23 +191,14 @@ bool Boid::getFriend(Boid* potentialFriend, float fov, float fovRadius)
 	float cos = glm::dot(glm::normalize(dir), glm::normalize(-toFriend));
 
 	if (glm::length(toFriend) < fovRadius && cos <= fov / 2.0f) {
-		if(potentialFriend != nullptr && potentialFriend != this) friends.push_back(potentialFriend);
-		return true;
+		if (potentialFriend != nullptr && potentialFriend != this) {
+		
+			if (potentialFriend->isPredator) predators.push_back(potentialFriend);
+			else friends.push_back(potentialFriend);
+			return true;
+		}	
 	}
-
-	return false;
-}
-
-bool Boid::getrelFriend(Boid potentialFriend, float fov, float fovRadius)
-{
-
-	glm::vec2 toFriend = potentialFriend.pos - this->pos;
-	float cos = glm::dot(glm::normalize(dir), glm::normalize(-toFriend));
-
-	if (glm::length(toFriend) < fovRadius && cos <= fov / 2.0f) {
-	    relFriends.push_back(potentialFriend);
-		return true;
-	}
+	else if (glm::length(toFriend) < fovRadius && potentialFriend->isPredator) predators.push_back(potentialFriend);
 
 	return false;
 }
