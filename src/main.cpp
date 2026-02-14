@@ -101,7 +101,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 glm::vec2 ScreenToWorld(double xpos, double ypos);
-
+void updateBoidsInstanceBuffer(int newN);
 
 bool initializeOpenGL() {
     // Initialize GLFW
@@ -427,7 +427,6 @@ void setupBuffers() {
     // Optional render states (place these in render setup if possible)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
-  //  glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 }
 
@@ -435,7 +434,6 @@ void setupBuffers() {
 void updateInstanceBuffer() {
     int numBoids = static_cast<int>(sim.Boids.size());
 
-    // Safety check
     if (numBoids > maxBufferSize) {
         std::cerr << "Error: Number of boids (" << numBoids << ") exceeds buffer size (" << maxBufferSize << ")" << std::endl;
         numBoids = maxBufferSize;
@@ -569,13 +567,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                         sim.Boids.push_back(sim.generateBoid(sim.mousePoint, spawnPredators));
                     }
 
-                    int oldN = N;
                     N = static_cast<int>(sim.Boids.size());
-
-                    if (N > oldN) {
-                        delete[] boids;
-                        boids = new BoidInstance[N];
-                    }
+                    updateBoidsInstanceBuffer(N);
 
                     middleMousePressed = true;
                 }
@@ -587,6 +580,11 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         }
     }
 
+}
+
+void updateBoidsInstanceBuffer(int newN) {
+    delete[] boids;
+    boids = new BoidInstance[N];
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
