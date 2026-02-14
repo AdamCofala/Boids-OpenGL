@@ -16,22 +16,21 @@ public:
 	std::vector<Boid> Boids;
 	float aspect;
 
-	float fov = 0.5f;
+	float fov       = 0.5f;
 	float fovRadius = 0.3f;
-	int frameCount = 0;
+	int frameCount  = 0;
 
 	float alignment    = 2.0f;
 	float cohesion	   = 3.0f;
 	float separation   = 1.0f;
 	float maxSpeed     = 0.5f; 
     float minSpeed     = 0.2f;
-	int   friendUpdate = 2;
 
-	bool atract = false;
-	bool repel = false; 
-	bool bounce = true;
+	bool atract       = false;
+	bool repel        = false; 
+	bool bounce       = true;
 	bool friendVisual = false;
-	bool speedCol = false;
+	bool speedCol     = false;
 
 	glm::vec2 mousePoint;
 	
@@ -89,13 +88,14 @@ public:
 	void update(float dt) {
 
 
-		if (frameCount % friendUpdate == 0) {                         
+		if (frameCount) {                         
 			madeFriends();
 		}
 		frameCount++;
 
 		for (size_t i=0; i < Boids.size(); i++) {
-			Boids[i].update(alignment, cohesion, separation, aspect, dt, minSpeed, maxSpeed, mousePoint, atract, repel, bounce, speedCol);
+			Boids[i].update(alignment, cohesion, separation, aspect, dt, minSpeed, maxSpeed,
+				mousePoint, atract, repel, bounce, speedCol);
 		}
 
 		if (friendVisual) showFriends();
