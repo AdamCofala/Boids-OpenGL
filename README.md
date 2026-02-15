@@ -2,6 +2,14 @@
 
 Real-time 2D flocking simulation implementing Craig Reynolds' Boids algorithm with spatial grid optimization. Built with C++17, OpenGL 4.6, GLFW, GLM, and ImGui.
 
+
+
+
+https://github.com/user-attachments/assets/47e98e0a-ac4e-4914-a2d9-dc68d36eb0c6
+
+
+
+
 **Key Features:**
 - Spatial grid partitioning for O(n) neighbor queries
 - GPU instanced rendering for thousands of boids
@@ -10,9 +18,9 @@ Real-time 2D flocking simulation implementing Craig Reynolds' Boids algorithm wi
 - Dynamic coloring modes (speed-based & friend visualization)
 - Configurable edge behaviors (bounce/wrap)
 
-| ![image](placeholder1.png) | ![image](placeholder2.png) | ![image](placeholder3.png) |
-|---|---|---|
-| Velocity-based color mapping | Friend influence visualization | High-density flocking behavior |
+| <img width="1402" height="932" alt="image" src="https://github.com/user-attachments/assets/d75b3d70-7ef9-4a92-86f3-cae40b84fa96" /> | <img width="1402" height="932" alt="image" src="https://github.com/user-attachments/assets/e86e00eb-b389-45ac-ba3c-1bb81c0ed205" /> |
+| --- | --- |
+| Velocity-based color mapping  | High-density flocking behavior |
 
 ---
 
@@ -25,14 +33,7 @@ Represents individual boid agents with position, velocity, and behavior rules. I
 - **Cohesion**: Move toward average position of neighbors
 
 ### 1.2. `SpatialGrid` Class (`SpatialGrid.h`)
-Implements spatial hash grid for efficient neighbor finding. Divides 2D space into uniform cells, reducing collision checks from O(n²) to O(n).
-
-**Key methods:**
-```cpp
-void insert(Boid boid, int id);              // Add boid to grid
-std::vector<int> get_nearby(const Boid& boid); // Get neighbors in 3×3 cell region
-void clear();                                 // Reset grid each frame
-```
+Implements spatial hash grid for efficient neighbor finding. Divides 2D space into uniform cells, reducing collision checks from O(n^2) to O(n).
 
 ### 1.3. `Simulation` Class (`Simulation.h`)
 Core simulation manager that:
@@ -88,58 +89,24 @@ cmake --build build --config Release
 |-----------------|---------------------------|
 | **Left Click**  | Attract boids to cursor   |
 | **Right Click** | Repel boids from cursor   |
-| **Scroll**      | Zoom in/out (planned)     |
 
-### 3.2. Keyboard
-| Key   | Action                          |
-|-------|---------------------------------|
-| `ESC` | Exit application                |
-| `V`   | Toggle vsync on/off             |
-| `F`   | Toggle friend visualization     |
-| `C`   | Toggle speed-based coloring     |
 
-### 3.3. ImGui Panel
+### 3.2. ImGui Panel
 Real-time adjustable parameters:
 - **Behavior weights**: Alignment, Cohesion, Separation
 - **Speed limits**: Min/Max velocity
-- **Field of view**: Angle and radius for neighbor detection
 - **Edge behavior**: Bounce vs wrap-around
 - **Visual modes**: Friend visualization, speed coloring
 - **Spawn controls**: Add boids at runtime
 
 ---
 
-## 4. Configuration
-
-### 4.1. Simulation Parameters (`Simulation.h`)
+## 4. Initial Setup (`main.cpp`)
 ```cpp
-// Behavior weights
-float alignment  = 2.0f;   // Steer toward average heading
-float cohesion   = 3.0f;   // Move toward flock center
-float separation = 1.0f;   // Avoid crowding
-
-// Speed constraints
-float maxSpeed = 0.5f;
-float minSpeed = 0.2f;
-
-// Perception
-float fov       = 0.5f;    // Field of view angle (radians)
-float fovRadius = 0.3f;    // Detection radius
-
-// Edge behavior
-bool bounce = true;        // Bounce off edges vs wrap-around
-```
-
-### 4.2. Initial Setup (`main.cpp`)
-```cpp
-const int N_BOIDS = 1000;           // Starting population
-const float ASPECT_RATIO = 16.0f/9.0f;
-```
-
-### 4.3. Spatial Grid (`SpatialGrid.h`)
-```cpp
-// Cell size should be >= fovRadius for correctness
-SpatialGrid grid{ fovRadius * 1.5f };
+const int N = 3000;           // Starting population
+GLuint SCR_WIDTH = 1400;      // Screen resolution
+GLuint SCR_HEIGHT = 900;
+float scale = 1.0f;           // Scale of boid instances
 ```
 
 ---
@@ -147,8 +114,8 @@ SpatialGrid grid{ fovRadius * 1.5f };
 ## 5. Performance
 
 ### 5.1. Optimizations Implemented
-1. **Spatial Grid Partitioning**: Reduces neighbor search from O(n²) to O(n)
-2. **Pair Deduplication**: Uses `unordered_set` to avoid checking (A,B) and (B,A)
+1. **Spatial Grid Partitioning**: Reduces neighbor search from O(n^2) to O(n)
+2. **Pair Deduplication**: Checks pairs where idx < idy, for n(n-1)/2 complexity
 3. **GPU Instancing**: Single draw call for all boids
 4. **Reference Passing**: Avoids unnecessary boid copies in hot loops
 
