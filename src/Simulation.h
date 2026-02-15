@@ -54,7 +54,7 @@ public:
 	Boid generateBoid(glm::vec2 &pos, bool predators = false) {
 
     	std::uniform_real_distribution<float> dir(-0.3f, 0.3f);
-		std::uniform_real_distribution<float> color(0.5f, 1.0f);
+		std::uniform_real_distribution<float> color(0.0f, 1.0f);
 		std::uniform_real_distribution<float> gradient(0.0f, 0.5f);
 		std::random_device rd;
 		std::mt19937 gen(rd());
