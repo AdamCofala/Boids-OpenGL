@@ -4,9 +4,11 @@
 #include <random>
 # define M_PI           3.14159265358979323846  /* pi */
 
-std::random_device rd;
+static thread_local std::mt19937 gen([] {
+	std::random_device rd;
+	return rd();
+}());
 std::uniform_real_distribution<float> steer(-1.0f, 1.0f);
-std::mt19937 gen(rd());
 
 void Boid::update(
 
@@ -188,18 +190,26 @@ float Boid::getRotation()
 bool Boid::getFriend(Boid* potentialFriend, float fov, float fovRadius)
 {
 
-	glm::vec2 toFriend = potentialFriend->pos - this->pos ;
-	float cos = glm::dot(glm::normalize(dir), glm::normalize(-toFriend));
+	glm::vec2 toFriend = potentialFriend->pos - this->pos;
+	float distSq = glm::dot(toFriend, toFriend);
+	float radiusSq = fovRadius * fovRadius;
 
-	if (glm::length(toFriend) < fovRadius && cos <= fov / 2.0f) {
-		if (potentialFriend != nullptr && potentialFriend != this) {
-		
-			if (potentialFriend->isPredator) predators.push_back(potentialFriend);
-			else friends.push_back(potentialFriend);
-			return true;
-		}	
+	if (distSq >= radiusSq) return false;
+
+	if (potentialFriend->isPredator) {
+		predators.push_back(potentialFriend);
 	}
-	else if (glm::length(toFriend) < fovRadius && potentialFriend->isPredator) predators.push_back(potentialFriend);
+
+	float halfFov = fov * 0.5f;
+	float cosVal = glm::dot(glm::normalize(dir), glm::normalize(-toFriend));
+
+	if (cosVal <= halfFov) {
+		if (potentialFriend != this) {
+			if (potentialFriend->isPredator) return true;
+			friends.push_back(potentialFriend);
+			return true;
+		}
+	}
 
 	return false;
 }

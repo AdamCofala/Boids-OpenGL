@@ -36,13 +36,13 @@ public:
         grid.clear();
     }
 
-    void insert(Boid boid, int id) {
+    void insert(const Boid& boid, int id) {
         // Insert a body into the appropriate cell in the grid.
         auto cell = getCell(boid.pos.x, boid.pos.y);
         grid[cell].push_back(id);
     }
 
-    void get_nearby(const Boid& boid, std::vector<int>& nearby) {
+    void get_nearby(const Boid& boid, std::vector<int>& nearby) const {
         // Retrieve bodies in the same and neighboring cells for potential collision checks.
         auto cell = getCell(boid.pos.x, boid.pos.y);
         nearby.clear();

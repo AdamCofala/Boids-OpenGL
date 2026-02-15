@@ -89,10 +89,12 @@ public:
 	}
 
 	void update(float dt) {
-		                     
+
 		optimizedMadeFriends();
-	
-		for (size_t i=0; i < Boids.size(); i++) {
+
+		int numBoids = static_cast<int>(Boids.size());
+		#pragma omp parallel for schedule(static)
+		for (int i = 0; i < numBoids; i++) {
 			Boids[i].update(alignment, cohesion, separation, aspect, dt, minSpeed, maxSpeed,
 				mousePoint, atract, repel, bounce, speedCol);
 		}
@@ -123,25 +125,33 @@ public:
 
 	void optimizedMadeFriends() {
 
-		for (size_t id = 0; id < Boids.size(); id++) {
+		int numBoids = static_cast<int>(Boids.size());
+
+		// Phase 1: Clear lists and build grid (sequential - grid is not thread-safe for writes)
+		for (int id = 0; id < numBoids; id++) {
 			Boids[id].friends.clear();
 			Boids[id].predators.clear();
 			grid.insert(Boids[id], id);
 		}
 
-		std::vector<int> nearby;  // Reuse vector to avoid allocations
-		nearby.reserve(64);
+		// Phase 2: Query neighbors and build friend lists (parallel)
+		// Each thread gets its own 'nearby' vector. Each boid writes only to its own lists.
+		#pragma omp parallel
+		{
+			std::vector<int> nearby;
+			nearby.reserve(64);
 
-		for (size_t x = 0; x < Boids.size(); x++) {
-			Boid& boid = Boids[x];
-			grid.get_nearby(boid, nearby);
+			#pragma omp for schedule(static)
+			for (int x = 0; x < numBoids; x++) {
+				Boid& boid = Boids[x];
+				grid.get_nearby(boid, nearby);
 
-			for (int neighbor_id : nearby) {
-				// Only process pairs where x < neighbor_id to avoid duplicates
-				if (x >= static_cast<size_t>(neighbor_id)) continue;
+				for (int neighbor_id : nearby) {
+					if (x >= neighbor_id) continue;
 
-				Boid& other = Boids[neighbor_id];
-				boid.getFriend(&other, fov, fovRadius);
+					Boid& other = Boids[neighbor_id];
+					boid.getFriend(&other, fov, fovRadius);
+				}
 			}
 		}
 

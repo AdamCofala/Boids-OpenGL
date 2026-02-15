@@ -16,7 +16,7 @@
 GLuint SCR_WIDTH = 1400;
 GLuint SCR_HEIGHT = 900;
 
-int       N             = 5000; // Number of boids
+int       N             = 10000; // Number of boids
 const int maxBufferSize = 2*N; // max buffer size
 float     scale         = 1.0f;
 
