@@ -77,6 +77,7 @@ void Boid::update(
 			}
 		
 		}
+
 		dir += runAway * deltaTime;
 
 		if (speedBasedColor && !isPredator) {

@@ -15,18 +15,19 @@
 // Global variables
 GLuint SCR_WIDTH = 1400;
 GLuint SCR_HEIGHT = 900;
-int N = 1000; // Number of boids
-const int maxBufferSize = 10000; // max buffer size
-int scale = 1.0f;
 
-float aspect = (float)SCR_WIDTH / (float)SCR_HEIGHT;
-int   frame = 0;
-int   FPSsum = 0;
-int   FPS = 0;
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
-bool spawnPredators = false;
-int spawnCount = 1;
+int       N             = 5000; // Number of boids
+const int maxBufferSize = 2*N; // max buffer size
+float     scale         = 1.0f;
+
+float aspect         = (float)SCR_WIDTH / (float)SCR_HEIGHT;
+int   frame          = 0;
+float FPSsum         = 0.0f;
+int   FPS            = 0;
+float deltaTime      = 0.016f;
+float lastFrame      = 0.0f;
+bool  spawnPredators = false;
+int   spawnCount     = 1;
 
 Simulation sim(N, aspect);
 GUI gui;
@@ -43,9 +44,9 @@ bool middleMousePressed= false;
 
 const GLfloat boidMesh[] = {
     // Triangle vertices (local space, pointing right)
-     0.02f,  0.0f,    // tip
-    -0.01f,  0.008f,  // back top
-    -0.01f, -0.008f,   // back bottom
+     0.01f,  0.0f,    // tip
+    -0.005f,  0.004f,  // back top
+    -0.005f, -0.004f,   // back bottom
 };
 
 struct BoidInstance {
@@ -123,6 +124,7 @@ bool initializeOpenGL() {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
+    glfwSwapInterval(0);
 
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -271,11 +273,13 @@ void render() {
     lastFrame = currentFrame;
     frame++;
 
-    FPSsum += 1 / deltaTime;
+    // Avoid division by zero or very small deltaTime
+    if (deltaTime > 0.0001f) {
+        FPSsum += 1.0f / deltaTime;
+    }
     if (frame % 30 == 0) {
-        FPS = FPSsum/30;
+        FPS = static_cast<int>(FPSsum / 30.0f);
         FPSsum = 0.0f;
-
     }
 
     glClearColor(0.1f, 0.1f, 0.1f, 0.1f);
@@ -328,6 +332,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+    sim.update(deltaTime);
+    updateInstanceBuffer();
+    render();
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {

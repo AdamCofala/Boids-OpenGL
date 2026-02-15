@@ -4,6 +4,8 @@
 #include <random>
 #include <glm/glm.hpp>
 #include <omp.h>
+#include "SpatialGrid.h"
+#include <unordered_set>
 
 
 class Simulation {
@@ -16,9 +18,9 @@ public:
 	std::vector<Boid> Boids;
 	float aspect;
 
-	float fov       = 0.5f;
-	float fovRadius = 0.3f;
-	int frameCount  = 0;
+	float fov          = 0.5f;
+	float fovRadius    = 0.1f;
+	int   frameCount   = 0;
 
 	float alignment    = 2.0f;
 	float cohesion	   = 3.0f;
@@ -26,13 +28,14 @@ public:
 	float maxSpeed     = 0.5f; 
     float minSpeed     = 0.2f;
 
-	bool atract       = false;
-	bool repel        = false; 
-	bool bounce       = true;
-	bool friendVisual = false;
-	bool speedCol     = false;
+	bool  atract       = false;
+	bool  repel        = false; 
+	bool  bounce       = true;
+	bool  friendVisual = false;
+	bool  speedCol     = false;
 
 	glm::vec2 mousePoint;
+	SpatialGrid grid{ fovRadius };
 	
 	void setupSimulation(unsigned int N) {
 
@@ -86,13 +89,9 @@ public:
 	}
 
 	void update(float dt) {
-
-
-		if (frameCount) {                         
-			madeFriends();
-		}
-		frameCount++;
-
+		                     
+		optimizedMadeFriends();
+	
 		for (size_t i=0; i < Boids.size(); i++) {
 			Boids[i].update(alignment, cohesion, separation, aspect, dt, minSpeed, maxSpeed,
 				mousePoint, atract, repel, bounce, speedCol);
@@ -105,7 +104,8 @@ public:
 		aspect = aspectNew;
 	}
 
-	void madeFriends() {
+	void madeFriends(float dt) {
+		// Fucking pointer typeshit friends making, breaking the KISS
 		auto boid = Boids.begin();
 		while (boid < Boids.end()) {
 			(*boid).friends.clear();
@@ -114,11 +114,38 @@ public:
 
 			while (potentialFriend < Boids.end()) {
 
-				if ((*boid).getFriend(&(*potentialFriend), fov, fovRadius)){}
+				(*boid).getFriend(&(*potentialFriend), fov, fovRadius);
 				++potentialFriend;
 			}
 			++boid;
 		}
+	}
+
+	void optimizedMadeFriends() {
+
+		for (size_t id = 0; id < Boids.size(); id++) {
+			Boids[id].friends.clear();
+			Boids[id].predators.clear();
+			grid.insert(Boids[id], id);
+		}
+
+		std::vector<int> nearby;  // Reuse vector to avoid allocations
+		nearby.reserve(64);
+
+		for (size_t x = 0; x < Boids.size(); x++) {
+			Boid& boid = Boids[x];
+			grid.get_nearby(boid, nearby);
+
+			for (int neighbor_id : nearby) {
+				// Only process pairs where x < neighbor_id to avoid duplicates
+				if (x >= static_cast<size_t>(neighbor_id)) continue;
+
+				Boid& other = Boids[neighbor_id];
+				boid.getFriend(&other, fov, fovRadius);
+			}
+		}
+
+		grid.clear();
 	}
 
 	void showFriends() {
