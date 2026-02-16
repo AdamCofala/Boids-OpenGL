@@ -89,6 +89,7 @@ cmake --build build --config Release
 |-----------------|---------------------------|
 | **Left Click**  | Attract boids to cursor   |
 | **Right Click** | Repel boids from cursor   |
+| **Middle Click**| Spawn boids  |
 
 
 ### 3.2. ImGui Panel
