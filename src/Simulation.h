@@ -142,7 +142,7 @@ public:
 			std::vector<int> nearby;
 			nearby.reserve(64);
 
-			#pragma omp for schedule(static)
+			#pragma omp for schedule(dynamic)
 			for (int x = 0; x < numBoids; x++) {
 				Boid& boid = Boids[x];
 				grid.get_nearby(boid, nearby);
