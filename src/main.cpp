@@ -13,7 +13,7 @@
 #include "Gui.h"
 
 // Global variables
-GLuint SCR_WIDTH = 1400;
+GLuint SCR_WIDTH  = 1400;
 GLuint SCR_HEIGHT = 900;
 
 int       N             = 10000; // Number of boids
@@ -35,7 +35,6 @@ GUI gui;
 // OpenGL objects
 GLFWwindow* window = nullptr;
 GLuint VAO, meshVBO, instanceVBO, shaderProgram;
-
 
 // Mouse state tracking
 bool leftMousePressed = false;
@@ -243,7 +242,6 @@ void setupBuffers() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
     glDepthMask(GL_TRUE);
 }
-
 
 void updateInstanceBuffer() {
     int numBoids = static_cast<int>(sim.Boids.size());

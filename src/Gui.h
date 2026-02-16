@@ -11,6 +11,7 @@ extern int spawnCount;
 extern bool spawnPredators;
 extern int FPS;
 extern int N;
+extern float scale;
 
 class GUI {
 
@@ -157,12 +158,9 @@ public:
 
 		// Create the main UI window - REMOVED ImGuiWindowFlags_NoInputs
 		ImGui::Begin("Boids Simulation v1.0", nullptr,
-			ImGuiWindowFlags_NoCollapse |        // Prevent collapsing the window
-			ImGuiWindowFlags_NoMove |            // Prevent moving the window
-			ImGuiWindowFlags_NoResize |          // Prevent resizing the window
-			ImGuiWindowFlags_NoTitleBar |        // Remove the default title bar for a custom look
 			ImGuiWindowFlags_NoScrollbar |       // Remove scrollbar if content fits
-			ImGuiWindowFlags_AlwaysAutoResize  // Automatically resize to fit content
+			ImGuiWindowFlags_AlwaysAutoResize |  // Automatically resize to fit content
+			ImGuiWindowFlags_NoMove
 		);
 
 		ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
@@ -179,6 +177,8 @@ public:
 		ImGui::SliderFloat("Cohesion Weight", &sim.cohesion, 0.0f, 10.0f);
 		ImGui::SliderFloat("Max Speed", &sim.maxSpeed, 0.001f, 1.5f);
 		ImGui::SliderFloat("Min Speed", &sim.minSpeed, 0.001f, 1.5f);
+		ImGui::SliderFloat("FOV range", &sim.fovRadius, 0.0f, 1.0f);
+		ImGui::SliderFloat("Scale", &scale, 0.001f, 3.0f);
 		ImGui::Checkbox("Bounce of edges", &sim.bounce);
 		ImGui::Checkbox("Friends making visualization", &sim.friendVisual);
 		ImGui::Checkbox("Color based on speed", &sim.speedCol);

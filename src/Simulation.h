@@ -93,6 +93,7 @@ public:
 		optimizedMadeFriends();
 
 		int numBoids = static_cast<int>(Boids.size());
+
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < numBoids; i++) {
 			Boids[i].update(alignment, cohesion, separation, aspect, dt, minSpeed, maxSpeed,
